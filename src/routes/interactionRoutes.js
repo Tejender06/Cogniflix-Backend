@@ -1,11 +1,8 @@
 const express = require("express");
 const router = express.Router();
+const interactionController = require("../controllers/interactionController");
 const authMiddleware = require("../middleware/authMiddleware");
 
-const interactionRoutes = require("./interactionRoutes");
-
-router.use(authMiddleware); // protect all routes
-
-router.use("/interactions", interactionRoutes);
+router.post("/", interactionController.addInteraction);
 
 module.exports = router;
