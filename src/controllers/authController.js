@@ -8,11 +8,7 @@ async function register(req, res) {
       return res.status(400).json({ error: "All fields required" });
     }
 
-    const user = await authService.registerUser(
-      name,
-      email,
-      password
-    );
+    const user = await authService.registerUser(name, email, password);
 
     res.status(201).json(user);
   } catch (error) {
@@ -24,13 +20,16 @@ async function login(req, res) {
   try {
     const { email, password } = req.body;
 
-    if (!email || !password) {
-      return res.status(400).json({ error: "All fields required" });
-    }
+    const { token } = await authService.loginUser(email, password);
 
-    const result = await authService.loginUser(email, password);
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: false, // true in production (HTTPS)
+      sameSite: "strict",
+      maxAge: 60 * 60 * 1000,
+    });
 
-    res.json(result);
+    res.json({ message: "Login successful" });
   } catch (error) {
     res.status(401).json({ error: error.message });
   }

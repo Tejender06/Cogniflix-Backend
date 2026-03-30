@@ -2,7 +2,14 @@ const interactionService = require("../services/interactionService");
 
 async function addInteraction(req, res) {
   try {
-    const result = await interactionService.handleInteraction(req.body);
+    const userId = req.user.id;
+
+    const data = {
+      ...req.body,
+      user_id: userId,
+    };
+
+    const result = await interactionService.handleInteraction(data);
 
     res.status(201).json({
       message: "Interaction logged successfully",

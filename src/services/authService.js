@@ -17,11 +17,7 @@ async function registerUser(name, email, password) {
     hashedPassword
   );
 
-  return {
-    id: user.id,
-    name: user.name,
-    email: user.email,
-  };
+  return user;
 }
 
 async function loginUser(email, password) {
