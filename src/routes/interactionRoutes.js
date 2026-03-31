@@ -1,7 +1,9 @@
 const express = require("express");
-const router = express.Router();
-const interactionController = require("../controllers/interactionController");
+const { addInteraction } = require("../controllers/interactionController");
+const authMiddleware = require("../middleware/authMiddleware");
 
-router.post("/", interactionController.addInteraction);
+const router = express.Router();
+
+router.post("/", authMiddleware, addInteraction);
 
 module.exports = router;

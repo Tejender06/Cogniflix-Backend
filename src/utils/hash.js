@@ -1,8 +1,11 @@
 const bcrypt = require("bcrypt");
 
-async function generate() {
-  const hash = await bcrypt.hash("123456", 10);
-  console.log("HASH:", hash);
+async function hashPassword(password) {
+  return await bcrypt.hash(password, 10);
 }
 
-generate();
+async function comparePassword(password, hash) {
+  return await bcrypt.compare(password, hash);
+}
+
+module.exports = { hashPassword, comparePassword };

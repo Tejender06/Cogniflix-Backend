@@ -1,48 +1,25 @@
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
-const userRepository = require("../repositories/userRepository");
+const userRepo = require("../repositories/userRepository");
+const { hashPassword, comparePassword } = require("../utils/hash");
+const { generateToken } = require("../utils/jwt");
 
 async function registerUser(name, email, password) {
-  const existingUser = await userRepository.findUserByEmail(email);
+  const existing = await userRepo.findUserByEmail(email);
+  if (existing) throw new Error("User already exists");
 
-  if (existingUser) {
-    throw new Error("User already exists");
-  }
-
-  const hashedPassword = await bcrypt.hash(password, 10);
-
-  const user = await userRepository.createUser(
-    name,
-    email,
-    hashedPassword
-  );
-
-  return user;
+  const hashed = await hashPassword(password);
+  return await userRepo.createUser(name, email, hashed);
 }
 
 async function loginUser(email, password) {
-  const user = await userRepository.findUserByEmail(email);
+  const user = await userRepo.findUserByEmail(email);
+  if (!user) throw new Error("Invalid credentials");
 
-  if (!user) {
-    throw new Error("User not found");
-  }
+  const match = await comparePassword(password, user.password);
+  if (!match) throw new Error("Invalid credentials");
 
-  const isMatch = await bcrypt.compare(password, user.password);
-
-  if (!isMatch) {
-    throw new Error("Invalid credentials");
-  }
-
-  const token = jwt.sign(
-    { id: user.id },
-    process.env.JWT_SECRET,
-    { expiresIn: "1h" }
-  );
+  const token = generateToken({ id: user.id });
 
   return { token };
 }
 
-module.exports = {
-  registerUser,
-  loginUser,
-};
+module.exports = { registerUser, loginUser };
