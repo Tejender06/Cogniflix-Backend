@@ -17,9 +17,10 @@ async function handleInteraction({ user_id, content_id, interaction_type }) {
 
   const score = scoreMap[interaction_type];
 
+  // 🔥 FIX: map content_id → item_id
   return await interactionRepository.addInteraction({
     user_id,
-    content_id,
+    item_id: content_id,
     interaction_type,
     score,
   });

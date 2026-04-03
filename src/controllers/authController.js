@@ -1,36 +1,92 @@
-const authService = require("../services/authService");
+const bcrypt = require("bcryptjs");
+const pool = require("../config/db");
+const { generateToken } = require("../utils/jwt");
 
-async function register(req, res) {
+const isProduction = process.env.NODE_ENV === "production";
+
+// ================= REGISTER =================
+const register = async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
-    const user = await authService.registerUser(name, email, password);
+    if (!name || !email || !password) {
+      return res.status(400).json({ error: "All fields are required" });
+    }
 
-    res.status(201).json(user);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const result = await pool.query(
+      `INSERT INTO users (name, email, password)
+       VALUES ($1, $2, $3)
+       RETURNING id, name, email`,
+      [name, email, hashedPassword]
+    );
+
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    if (err.code === "23505") {
+      return res.status(400).json({ error: "Email already exists" });
+    }
+    res.status(500).json({ error: err.message });
   }
-}
+};
 
-async function login(req, res) {
+// ================= LOGIN =================
+const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const { token } = await authService.loginUser(email, password);
+    const result = await pool.query(
+      "SELECT * FROM users WHERE email = $1",
+      [email]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(400).json({ error: "User not found" });
+    }
+
+    const user = result.rows[0];
+
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (!isMatch) {
+      return res.status(400).json({ error: "Invalid credentials" });
+    }
+
+    const token = generateToken(user);
 
     res.cookie("token", token, {
       httpOnly: true,
-      sameSite: "lax",
-      secure: false,
+      secure: isProduction, // 🔥 true in production (HTTPS required)
+      sameSite: isProduction ? "none" : "lax", // 🔥 critical for cross-domain
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
     res.json({
-      message: "Login successful"
+      message: "Login successful",
+      user: {
+        id: user.id,
+        email: user.email,
+      },
     });
-
-  } catch (error) {
-    res.status(401).json({ error: error.message });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
-}
+};
 
-module.exports = { register, login };
+// ================= LOGOUT =================
+const logout = (req, res) => {
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
+  });
+
+  res.json({ message: "Logged out successfully" });
+};
+
+module.exports = {
+  register,
+  login,
+  logout,
+};
