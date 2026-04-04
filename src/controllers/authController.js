@@ -1,6 +1,7 @@
 const bcrypt = require("bcryptjs");
 const pool = require("../config/db");
 const { generateToken } = require("../utils/jwt");
+const jwt = require("jsonwebtoken");
 
 const isProduction = process.env.NODE_ENV === "production";
 
@@ -57,8 +58,8 @@ const login = async (req, res) => {
 
     res.cookie("token", token, {
       httpOnly: true,
-      secure: isProduction, // 🔥 true in production (HTTPS required)
-      sameSite: isProduction ? "none" : "lax", // 🔥 critical for cross-domain
+      secure: isProduction,
+      sameSite: isProduction ? "none" : "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
@@ -85,8 +86,29 @@ const logout = (req, res) => {
   res.json({ message: "Logged out successfully" });
 };
 
+// ================= GET CURRENT USER =================
+const getCurrentUser = (req, res) => {
+  try {
+    const token = req.cookies.token;
+
+    if (!token) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    res.json({
+      id: decoded.id,
+      email: decoded.email,
+    });
+  } catch (err) {
+    return res.status(401).json({ error: "Invalid token" });
+  }
+};
+
 module.exports = {
   register,
   login,
   logout,
+  getCurrentUser,
 };
