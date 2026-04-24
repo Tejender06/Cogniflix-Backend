@@ -45,6 +45,19 @@ app.get("/api/test", (req, res) => {
   res.send("Server working");
 });
 
+app.get("/", (req, res) => {
+  res.status(200).json({
+    status: "online",
+    message: "Cogniflix API is running",
+    endpoints: [
+      "/api/auth",
+      "/api/interactions",
+      "/api/movies",
+      "/api/recommendations"
+    ]
+  });
+});
+
 app.use((req, res) => {
   res.status(404).json({ error: "Route not found" });
 });
