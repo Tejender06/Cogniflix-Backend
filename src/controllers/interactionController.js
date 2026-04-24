@@ -2,7 +2,7 @@ const interactionService = require("../services/interactionService");
 
 async function addInteraction(req, res) {
   try {
-    const { content_id, interaction_type } = req.body;
+    const { content_id, interaction_type, score } = req.body;
 
     if (!content_id || !interaction_type) {
       return res.status(400).json({ error: "Missing required fields" });
@@ -12,6 +12,7 @@ async function addInteraction(req, res) {
       user_id: req.user.id,
       content_id,
       interaction_type,
+      score,
     });
 
     res.status(201).json({
@@ -32,4 +33,27 @@ async function getHistory(req, res) {
   }
 }
 
-module.exports = { addInteraction, getHistory };
+async function getSaved(req, res) {
+  try {
+    const saved = await interactionService.getSaved(req.user.id);
+    res.status(200).json({ data: saved });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+}
+
+async function removeSaved(req, res) {
+  try {
+    const { itemId } = req.params;
+    if (!itemId) {
+      return res.status(400).json({ error: "Missing itemId parameter" });
+    }
+    
+    await interactionService.removeSavedInteraction(req.user.id, itemId);
+    res.status(200).json({ message: "Removed from saved" });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+}
+
+module.exports = { addInteraction, getHistory, getSaved, removeSaved };

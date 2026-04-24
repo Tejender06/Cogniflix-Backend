@@ -9,6 +9,7 @@ router.get("/trending", async (req, res) => {
       SELECT it.*, COUNT(i.id) as interaction_count
       FROM items it
       LEFT JOIN interactions i ON it.id = i.item_id
+      WHERE it.content_type = 'movie'
       GROUP BY it.id
       ORDER BY interaction_count DESC, it.popularity_score DESC
       LIMIT 20
@@ -23,11 +24,12 @@ router.get("/trending", async (req, res) => {
 
 router.get("/", async (req, res) => {
   try {
-    const { genre, emotion } = req.query;
+    const { genre, emotion, search } = req.query;
     let query = `
       SELECT it.*, et.name as emotion_name 
       FROM items it 
       LEFT JOIN emotion_tags et ON it.emotion_tag_id = et.id
+      WHERE it.content_type = 'movie'
     `;
     const values = [];
     const conditions = [];
@@ -40,9 +42,13 @@ router.get("/", async (req, res) => {
       values.push(`%${emotion}%`);
       conditions.push(`et.name ILIKE $${values.length}`);
     }
+    if (search) {
+      values.push(`%${search}%`);
+      conditions.push(`it.title ILIKE $${values.length}`);
+    }
 
     if (conditions.length > 0) {
-      query += " WHERE " + conditions.join(" AND ");
+      query += " AND " + conditions.join(" AND ");
     }
 
     query += " ORDER BY it.popularity_score DESC NULLS LAST LIMIT 100";
@@ -90,6 +96,13 @@ router.get("/genres", async (req, res) => {
 router.get("/:id", async (req, res) => {
   try {
     const { id } = req.params;
+    
+    // Validate UUID to prevent DB crash if an invalid string like "genres" falls through
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(id)) {
+      return res.status(400).json({ error: "Invalid movie ID" });
+    }
+
     const movieResult = await pool.query(
       `
       SELECT it.*, et.name as emotion_name 
@@ -108,6 +121,35 @@ router.get("/:id", async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to fetch movie details" });
+  }
+});
+
+router.get("/:id/similar", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Validate UUID
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(id)) {
+      return res.status(400).json({ error: "Invalid movie ID" });
+    }
+
+    // Use cosine similarity on embeddings
+    const similarResult = await pool.query(
+      `
+      SELECT it.*
+      FROM items it
+      WHERE it.id != $1
+      ORDER BY it.embedding <=> (SELECT embedding FROM items WHERE id = $1)
+      LIMIT 10
+      `,
+      [id]
+    );
+
+    res.json({ movies: similarResult.rows });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch similar movies" });
   }
 });
 

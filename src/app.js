@@ -5,6 +5,7 @@ const cors = require("cors");
 const authRoutes = require("./routes/authRoutes");
 const interactionRoutes = require("./routes/interactionRoutes");
 const movieRoutes = require("./routes/movieRoutes");
+const tvShowsRoutes = require("./routes/tvShowsRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const recommendationRoutes = require("./routes/recommendation.routes");
 
@@ -38,6 +39,7 @@ app.use(
 app.use("/api/auth", authRoutes);
 app.use("/api/interactions", interactionRoutes);
 app.use("/api/movies", movieRoutes);
+app.use("/api/tv-shows", tvShowsRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/recommendations", recommendationRoutes);
 
@@ -53,6 +55,7 @@ app.get("/", (req, res) => {
       "/api/auth",
       "/api/interactions",
       "/api/movies",
+      "/api/tv-shows",
       "/api/recommendations"
     ]
   });

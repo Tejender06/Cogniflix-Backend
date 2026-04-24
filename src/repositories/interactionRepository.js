@@ -35,4 +35,26 @@ async function getHistory(user_id) {
   return result.rows;
 }
 
-module.exports = { addInteraction, getHistory };
+async function getSaved(user_id) {
+  const result = await pool.query(
+    `SELECT it.*
+     FROM interactions i
+     JOIN items it ON i.item_id = it.id
+     WHERE i.user_id = $1 AND i.interaction_type = 'save'
+     ORDER BY i.created_at DESC`,
+    [user_id]
+  );
+  return result.rows;
+}
+
+async function removeInteraction(user_id, item_id, interaction_type) {
+  const result = await pool.query(
+    `DELETE FROM interactions
+     WHERE user_id = $1 AND item_id = $2 AND interaction_type = $3
+     RETURNING *`,
+    [user_id, item_id, interaction_type]
+  );
+  return result.rowCount > 0;
+}
+
+module.exports = { addInteraction, getHistory, getSaved, removeInteraction };

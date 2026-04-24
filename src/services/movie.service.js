@@ -24,6 +24,9 @@ const genreIdMap = {
   53: "thriller",
   10752: "war",
   37: "western",
+  10759: "action-adventure",
+  10765: "sci-fi-fantasy",
+  10768: "war-politics",
 };
 
 const delay = (ms) => new Promise((res) => setTimeout(res, ms));
@@ -37,6 +40,17 @@ async function fetchKeywords(movieId, API_KEY) {
     },
   );
   return (res.data.keywords || []).map((k) => k.name);
+}
+
+async function fetchTvKeywords(tvId, API_KEY) {
+  const res = await axios.get(
+    `https://api.themoviedb.org/3/tv/${tvId}/keywords`,
+    {
+      params: { api_key: API_KEY },
+      timeout: 15000,
+    },
+  );
+  return (res.data.results || []).map((k) => k.name);
 }
 
 async function getOrCreateEmotion(name) {
@@ -220,17 +234,22 @@ const fetchAndStoreMovies = async () => {
               ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
               : "https://via.placeholder.com/500x750?text=No+Poster";
 
+            const backdropUrl = movie.backdrop_path
+              ? `https://image.tmdb.org/t/p/original${movie.backdrop_path}`
+              : null;
+
             await pool.query(
               `
               INSERT INTO items 
-              (title, description, language, region, genre, emotion_tag_id, popularity_score, poster_url)
-              VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+              (title, description, language, region, genre, emotion_tag_id, popularity_score, poster_url, backdrop_url)
+              VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
               ON CONFLICT (title) 
               DO UPDATE SET 
                 description = EXCLUDED.description,
                 language = EXCLUDED.language,
                 popularity_score = EXCLUDED.popularity_score,
                 poster_url = EXCLUDED.poster_url,
+                backdrop_url = EXCLUDED.backdrop_url,
                 genre = EXCLUDED.genre,
                 emotion_tag_id = EXCLUDED.emotion_tag_id
               `,
@@ -243,6 +262,7 @@ const fetchAndStoreMovies = async () => {
                 emotionId,
                 movie.vote_average || 0,
                 posterUrl,
+                backdropUrl
               ],
             );
           } catch {
@@ -267,3 +287,144 @@ const fetchAndStoreMovies = async () => {
 };
 
 module.exports = { fetchAndStoreMovies };
+
+/*
+  TV Shows ingestion
+*/
+const fetchAndStoreTvShows = async () => {
+  try {
+    console.log("Fetching TV Shows...");
+
+    const API_KEY = process.env.TMDB_API_KEY;
+    if (!API_KEY) throw new Error("TMDB_API_KEY is missing");
+
+    let allShows = [];
+
+    // Fetch shows with retry
+    for (let page = 1; page <= 5; page++) {
+      let retries = 3;
+      while (retries > 0) {
+        try {
+          const res = await axios.get(
+            "https://api.themoviedb.org/3/tv/popular",
+            {
+              params: { api_key: API_KEY, page },
+              timeout: 15000,
+            },
+          );
+          allShows.push(...res.data.results);
+          break;
+        } catch {
+          retries--;
+          await delay(1500);
+        }
+      }
+      await delay(700);
+    }
+
+    console.log(`${allShows.length} TV Shows fetched`);
+    const BATCH_SIZE = 5;
+
+    for (let i = 0; i < allShows.length; i += BATCH_SIZE) {
+      const batch = allShows.slice(i, i + BATCH_SIZE);
+
+      await Promise.all(
+        batch.map(async (show) => {
+          try {
+            let keywords = [];
+            let retries = 2;
+            while (retries > 0) {
+              try {
+                keywords = await fetchTvKeywords(show.id, API_KEY);
+                break;
+              } catch {
+                retries--;
+                await delay(500);
+              }
+            }
+
+            let genres = (show.genre_ids || [])
+              .map((id) => genreIdMap[id])
+              .filter(Boolean);
+
+            if (genres.length === 0) {
+              const keywordGenres = keywords
+                .map((k) => k.toLowerCase())
+                .filter((k) =>
+                  [
+                    "action",
+                    "comedy",
+                    "drama",
+                    "romance",
+                    "thriller",
+                    "horror",
+                    "adventure",
+                    "crime",
+                    "mystery",
+                    "family",
+                  ].includes(k),
+                );
+
+              if (keywordGenres.length) {
+                genres = keywordGenres;
+              }
+            }
+
+            let finalGenre = genres.length ? genres.join(",") : "general";
+            const emotion = mapToEmotion(genres, keywords);
+            const emotionId = await getOrCreateEmotion(emotion);
+
+            const posterUrl = show.poster_path
+              ? `https://image.tmdb.org/t/p/w500${show.poster_path}`
+              : "https://via.placeholder.com/500x750?text=No+Poster";
+
+            const backdropUrl = show.backdrop_path
+              ? `https://image.tmdb.org/t/p/original${show.backdrop_path}`
+              : null;
+
+            await pool.query(
+              `
+              INSERT INTO items 
+              (title, description, language, region, genre, emotion_tag_id, popularity_score, poster_url, backdrop_url, content_type)
+              VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+              ON CONFLICT (title) 
+              DO UPDATE SET 
+                description = EXCLUDED.description,
+                language = EXCLUDED.language,
+                popularity_score = EXCLUDED.popularity_score,
+                poster_url = EXCLUDED.poster_url,
+                backdrop_url = EXCLUDED.backdrop_url,
+                genre = EXCLUDED.genre,
+                emotion_tag_id = EXCLUDED.emotion_tag_id,
+                content_type = EXCLUDED.content_type
+              `,
+              [
+                show.name, // TV shows use 'name' instead of 'title'
+                show.overview,
+                show.original_language,
+                "Global",
+                finalGenre,
+                emotionId,
+                show.vote_average || 0,
+                posterUrl,
+                backdropUrl,
+                'tv'
+              ],
+            );
+          } catch (e) {
+            console.log(`Skipped: ${show.name}`, e.message);
+          }
+        }),
+      );
+
+      await delay(800);
+    }
+
+    console.log("TV Shows stored successfully");
+  } catch (err) {
+    console.error("TV Ingestion failed", err);
+    throw err;
+  }
+};
+
+module.exports = { fetchAndStoreMovies, fetchAndStoreTvShows };
