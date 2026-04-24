@@ -45,7 +45,7 @@ router.get("/", async (req, res) => {
       query += " WHERE " + conditions.join(" AND ");
     }
 
-    query += " ORDER BY it.popularity_score DESC LIMIT 50";
+    query += " ORDER BY it.popularity_score DESC NULLS LAST LIMIT 100";
 
     const moviesResult = await pool.query(query, values);
 
@@ -56,6 +56,34 @@ router.get("/", async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to fetch movies" });
+  }
+});
+
+router.get("/genres", async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT DISTINCT genre 
+      FROM items 
+      WHERE genre IS NOT NULL AND genre != ''
+      ORDER BY genre ASC
+    `);
+    
+    // Some movies might have multiple genres in a string, but assuming simple comma separated or single
+    const rawGenres = result.rows.map(row => row.genre);
+    
+    // Normalize and split comma separated genres just in case
+    const uniqueGenres = new Set();
+    rawGenres.forEach(g => {
+      const parts = g.split(',').map(p => p.trim());
+      parts.forEach(p => {
+        if (p) uniqueGenres.add(p);
+      });
+    });
+
+    res.json({ genres: Array.from(uniqueGenres).sort() });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch genres" });
   }
 });
 

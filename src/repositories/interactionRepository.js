@@ -1,6 +1,17 @@
 const pool = require("../config/db");
 
 async function addInteraction({ user_id, item_id, interaction_type, score }) {
+  // Prevent duplicate likes or rates per movie for a user
+  if (interaction_type === 'like' || interaction_type === 'rate') {
+    const existing = await pool.query(
+      `SELECT * FROM interactions WHERE user_id = $1 AND item_id = $2 AND interaction_type = $3`,
+      [user_id, item_id, interaction_type]
+    );
+    if (existing.rows.length > 0) {
+      return existing.rows[0]; // Return the existing record instead of duplicating
+    }
+  }
+
   const result = await pool.query(
     `INSERT INTO interactions (user_id, item_id, interaction_type, score)
      VALUES ($1, $2, $3, $4)

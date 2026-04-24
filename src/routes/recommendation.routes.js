@@ -1,10 +1,8 @@
 const express = require("express");
 const router = express.Router();
+const { authMiddleware } = require("../middleware/authMiddleware");
+const recommendationController = require("../controllers/recommendation.controller");
 
-router.get("/", (req, res) => {
-  return res.json({
-    message: "recommendation route hit"
-  });
-});
+router.get("/", authMiddleware, recommendationController.getRecommendations);
 
 module.exports = router;
