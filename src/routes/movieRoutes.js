@@ -59,4 +59,28 @@ router.get("/", async (req, res) => {
   }
 });
 
+router.get("/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const movieResult = await pool.query(
+      `
+      SELECT it.*, et.name as emotion_name 
+      FROM items it 
+      LEFT JOIN emotion_tags et ON it.emotion_tag_id = et.id
+      WHERE it.id = $1
+      `,
+      [id]
+    );
+
+    if (movieResult.rows.length === 0) {
+      return res.status(404).json({ error: "Movie not found" });
+    }
+
+    res.json({ movie: movieResult.rows[0] });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch movie details" });
+  }
+});
+
 module.exports = router;
