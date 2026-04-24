@@ -56,14 +56,15 @@ const login = async (req, res) => {
 
     const token = generateToken(user);
 
+    // ✅ FIXED COOKIE CONFIG (explicit for localhost reliability)
     res.cookie("token", token, {
       httpOnly: true,
-      secure: isProduction,
-      sameSite: isProduction ? "none" : "lax",
+      secure: false,         // force false for localhost
+      sameSite: "lax",       // required for Postman/browser
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    res.json({
+    res.status(200).json({
       message: "Login successful",
       user: {
         id: user.id,
@@ -79,8 +80,8 @@ const login = async (req, res) => {
 const logout = (req, res) => {
   res.clearCookie("token", {
     httpOnly: true,
-    secure: isProduction,
-    sameSite: isProduction ? "none" : "lax",
+    secure: false,
+    sameSite: "lax",
   });
 
   res.json({ message: "Logged out successfully" });
@@ -89,7 +90,7 @@ const logout = (req, res) => {
 // ================= GET CURRENT USER =================
 const getCurrentUser = (req, res) => {
   try {
-    const token = req.cookies.token;
+    const token = req.cookies?.token;
 
     if (!token) {
       return res.status(401).json({ error: "Not authenticated" });
