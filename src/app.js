@@ -6,6 +6,7 @@ const authRoutes = require("./routes/authRoutes");
 const interactionRoutes = require("./routes/interactionRoutes");
 const movieRoutes = require("./routes/movieRoutes");
 const adminRoutes = require("./routes/adminRoutes");
+const recommendationRoutes = require("./routes/recommendation.routes");
 
 const app = express();
 
@@ -38,9 +39,23 @@ app.use("/api/auth", authRoutes);
 app.use("/api/interactions", interactionRoutes);
 app.use("/api/movies", movieRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/recommendations", recommendationRoutes);
 
 app.get("/api/test", (req, res) => {
   res.send("Server working");
+});
+
+app.get("/", (req, res) => {
+  res.status(200).json({
+    status: "online",
+    message: "Cogniflix API is running",
+    endpoints: [
+      "/api/auth",
+      "/api/interactions",
+      "/api/movies",
+      "/api/recommendations"
+    ]
+  });
 });
 
 app.use((req, res) => {

@@ -23,4 +23,13 @@ async function addInteraction(req, res) {
   }
 }
 
-module.exports = { addInteraction };
+async function getHistory(req, res) {
+  try {
+    const history = await interactionService.getHistory(req.user.id);
+    res.status(200).json({ data: history });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+}
+
+module.exports = { addInteraction, getHistory };

@@ -26,4 +26,9 @@ async function handleInteraction({ user_id, content_id, interaction_type }) {
   });
 }
 
-module.exports = { handleInteraction };
+async function getHistory(user_id) {
+  if (!user_id) throw new Error("Missing user_id");
+  return await interactionRepository.getHistory(user_id);
+}
+
+module.exports = { handleInteraction, getHistory };
