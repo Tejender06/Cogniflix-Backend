@@ -1,3 +1,19 @@
+/*
+FILE: userPreference.repository.js
+
+PURPOSE:
+Fetches and updates user preference embeddings based on interactions.
+
+FLOW:
+Service -> Repository -> Database
+
+USED BY:
+interactionService.js
+
+NEXT FLOW:
+PostgreSQL Database
+
+*/
 const db = require('../config/db');
 
 const saveUserPreferences = async (userId, genres = [], emotions = []) => {

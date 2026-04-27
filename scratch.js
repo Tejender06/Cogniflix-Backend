@@ -1,3 +1,19 @@
+/*
+FILE: scratch.js
+
+PURPOSE:
+Temporary scratchpad file for testing isolated logic.
+
+FLOW:
+Ad-hoc Execution -> Console Output
+
+USED BY:
+Developers
+
+NEXT FLOW:
+None
+
+*/
 require('dotenv').config();
 const pool = require('./src/config/db');
 Promise.all(['users', 'items', 'user_preferences', 'interactions'].map(t => 

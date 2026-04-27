@@ -1,3 +1,19 @@
+/*
+FILE: movieRoutes.js
+
+PURPOSE:
+Defines API endpoints for fetching movie data.
+
+FLOW:
+Client -> Routes -> Controller
+
+USED BY:
+app.js
+
+NEXT FLOW:
+movie.controller.js
+
+*/
 const express = require("express");
 const router = express.Router();
 const pool = require("../config/db");

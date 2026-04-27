@@ -1,3 +1,19 @@
+/*
+FILE: authMiddleware.js
+
+PURPOSE:
+Verifies JWT tokens for protected routes.
+
+FLOW:
+Client Request -> Middleware (Token Verify) -> Next Handler
+
+USED BY:
+protectedRoutes.js, interactionRoutes.js
+
+NEXT FLOW:
+Controllers
+
+*/
 const jwt = require("jsonwebtoken");
 
 const authMiddleware = (req, res, next) => {

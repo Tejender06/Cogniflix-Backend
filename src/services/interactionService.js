@@ -1,3 +1,19 @@
+/*
+FILE: interactionService.js
+
+PURPOSE:
+Implements business logic for processing user interactions and updating preferences.
+
+FLOW:
+Controller -> Service -> Repository
+
+USED BY:
+interactionController.js
+
+NEXT FLOW:
+interactionRepository.js, userPreference.repository.js
+
+*/
 const interactionRepository = require("../repositories/interactionRepository");
 
 async function handleInteraction({ user_id, content_id, interaction_type, score: passedScore }) {

@@ -1,3 +1,19 @@
+/*
+FILE: test_db.js
+
+PURPOSE:
+Tests the basic database connection.
+
+FLOW:
+Script Execution -> DB Connection -> Connection Check
+
+USED BY:
+Deployment pipeline / Debugging
+
+NEXT FLOW:
+PostgreSQL Database
+
+*/
 require('dotenv').config();
 const pool = require('./src/config/db');
 async function run() {

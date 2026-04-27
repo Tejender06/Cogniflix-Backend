@@ -1,3 +1,19 @@
+/*
+FILE: migrate.js
+
+PURPOSE:
+Executes database migrations to initialize or update schema.
+
+FLOW:
+Script Execution -> DB Connection -> DDL Execution
+
+USED BY:
+Deployment pipeline / Manual execution
+
+NEXT FLOW:
+PostgreSQL Database
+
+*/
 const { Pool } = require('pg');
 require('dotenv').config();
 

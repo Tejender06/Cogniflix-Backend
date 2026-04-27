@@ -1,3 +1,19 @@
+/*
+FILE: adminRoutes.js
+
+PURPOSE:
+Defines API endpoints for administrative actions.
+
+FLOW:
+Client -> Routes -> Controller
+
+USED BY:
+app.js
+
+NEXT FLOW:
+adminController.js
+
+*/
 const express = require("express");
 const router = express.Router();
 const { fetchAndStoreMovies, fetchAndStoreTvShows } = require("../services/movie.service");

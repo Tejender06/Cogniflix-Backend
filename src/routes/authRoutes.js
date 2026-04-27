@@ -1,3 +1,19 @@
+/*
+FILE: authRoutes.js
+
+PURPOSE:
+Defines API endpoints for user authentication.
+
+FLOW:
+Client -> Routes -> Controller
+
+USED BY:
+app.js
+
+NEXT FLOW:
+authController.js
+
+*/
 const express = require("express");
 const router = express.Router();
 

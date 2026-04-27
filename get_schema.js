@@ -1,3 +1,19 @@
+/*
+FILE: get_schema.js
+
+PURPOSE:
+Fetches and displays the current database schema.
+
+FLOW:
+Script Execution -> DB Connection -> Schema Query -> Console Output
+
+USED BY:
+Manual execution / Debugging
+
+NEXT FLOW:
+PostgreSQL Database
+
+*/
 const { Pool } = require('pg');
 require('dotenv').config();
 const pool = new Pool({

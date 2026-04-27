@@ -1,3 +1,19 @@
+/*
+FILE: tmdbTest.js
+
+PURPOSE:
+Tests connectivity to the TMDB API.
+
+FLOW:
+Script Execution -> API Request -> Output
+
+USED BY:
+Manual execution / Debugging
+
+NEXT FLOW:
+TMDB API
+
+*/
 const axios = require("axios");
 require("dotenv").config();
 

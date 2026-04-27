@@ -1,3 +1,19 @@
+/*
+FILE: server.js
+
+PURPOSE:
+Entry point of backend server. Initializes DB and starts listening.
+
+FLOW:
+Server Start -> DB Init -> App Listening
+
+USED BY:
+Main execution (npm start)
+
+NEXT FLOW:
+app.js
+
+*/
 require("dotenv").config();
 
 const app = require("./app");

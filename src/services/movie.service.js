@@ -1,3 +1,19 @@
+/*
+FILE: movie.service.js
+
+PURPOSE:
+Implements business logic for retrieving and formatting movie details.
+
+FLOW:
+Controller -> Service -> Repository
+
+USED BY:
+movie.controller.js
+
+NEXT FLOW:
+movieRepository.js
+
+*/
 const axios = require("axios");
 const pool = require("../config/db");
 const { mapToEmotion } = require("../utils/emotionMap");

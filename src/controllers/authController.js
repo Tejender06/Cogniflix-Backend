@@ -1,3 +1,19 @@
+/*
+FILE: authController.js
+
+PURPOSE:
+Handles incoming authentication requests (login, signup) and sends response.
+
+FLOW:
+Routes -> Controller -> Service
+
+USED BY:
+authRoutes.js
+
+NEXT FLOW:
+authService.js
+
+*/
 const bcrypt = require("bcryptjs");
 const pool = require("../config/db");
 const { generateToken } = require("../utils/jwt");

@@ -1,3 +1,19 @@
+/*
+FILE: recommendation.service.js
+
+PURPOSE:
+Implements hybrid recommendation logic (popularity + similarity + emotion + regional + time).
+
+FLOW:
+Controller -> Service -> Repository
+
+USED BY:
+recommendation.controller.js
+
+NEXT FLOW:
+userRepository.js, recommendation.repository.js
+
+*/
 const db = require('../config/db');
 
 const getRecommendations = async (userId) => {

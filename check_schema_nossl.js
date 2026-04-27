@@ -1,3 +1,19 @@
+/*
+FILE: check_schema_nossl.js
+
+PURPOSE:
+Verifies the database schema without using SSL connection.
+
+FLOW:
+Script Execution -> DB Connection -> Schema Query -> Console Output
+
+USED BY:
+Manual execution / Deployment checks
+
+NEXT FLOW:
+PostgreSQL Database
+
+*/
 const { Pool } = require("pg");
 require("dotenv").config();
 

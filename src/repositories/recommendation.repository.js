@@ -1,3 +1,19 @@
+/*
+FILE: recommendation.repository.js
+
+PURPOSE:
+Fetches recommendations using pgvector similarity search.
+
+FLOW:
+Service -> Repository -> Database
+
+USED BY:
+recommendation.service.js
+
+NEXT FLOW:
+PostgreSQL Database
+
+*/
 const db = require('../config/db');
 
 const getRecommendations = async (userId) => {

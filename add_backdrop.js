@@ -1,3 +1,19 @@
+/*
+FILE: add_backdrop.js
+
+PURPOSE:
+Utility script to fetch and update missing backdrop images for movies.
+
+FLOW:
+Script Execution -> Database -> TMDB API -> Database Update
+
+USED BY:
+Manual execution
+
+NEXT FLOW:
+TMDB API
+
+*/
 const { Pool } = require('pg'); 
 require('dotenv').config(); 
 const pool = new Pool({ 

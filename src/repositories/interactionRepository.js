@@ -1,3 +1,19 @@
+/*
+FILE: interactionRepository.js
+
+PURPOSE:
+Manages database operations for user interactions (likes, ratings).
+
+FLOW:
+Service -> Repository -> Database
+
+USED BY:
+interactionService.js
+
+NEXT FLOW:
+PostgreSQL Database
+
+*/
 const pool = require("../config/db");
 
 async function addInteraction({ user_id, item_id, interaction_type, score }) {

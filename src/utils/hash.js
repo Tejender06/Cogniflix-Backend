@@ -1,3 +1,19 @@
+/*
+FILE: hash.js
+
+PURPOSE:
+Provides utility functions for hashing and comparing passwords.
+
+FLOW:
+Service -> Util -> Value Return
+
+USED BY:
+authService.js
+
+NEXT FLOW:
+None
+
+*/
 const bcrypt = require("bcrypt");
 
 async function hashPassword(password) {

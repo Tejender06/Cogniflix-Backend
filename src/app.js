@@ -1,3 +1,19 @@
+/*
+FILE: app.js
+
+PURPOSE:
+Configures the Express application, middleware, and route mounting.
+
+FLOW:
+Server Start -> Middleware -> Routes
+
+USED BY:
+server.js
+
+NEXT FLOW:
+Routes (authRoutes.js, movieRoutes.js, etc.)
+
+*/
 const express = require("express");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
